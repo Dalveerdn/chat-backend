@@ -12,6 +12,16 @@ please visit:
 - API Discription
 - warning
 
+## Prerequisite
+
+    - PostgreSQL: Render external public URL
+    - Firebase Firestore: config file "chat-backend-a115f-firebase-adminsdk-fbsvc-6fca2fe455.json"
+
+    .env:
+
+        PORT=5000
+        DATABASE_URL=postgresql://....
+
 
 ## Project Structure
 
@@ -335,6 +345,8 @@ README.md – Contains project documentation and setup instructions.
 7. Security: Include input validation, rate limiting, secure environment variables, access control and database security.
 
 8. Code Quality: Keep code clean, reusable, maintainable and production-ready. Avoid duplicated logic and unnecessary abstractions.
+
+9. Use standard SQL Aggregation Query, Common Table Expressions (CTEs).
 
 Objective: Build a secure, scalable, maintainable production-ready chat backend.
 
