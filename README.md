@@ -302,18 +302,21 @@ README.md – Contains project documentation and setup instructions.
 
     http://localhost:5000/chat/be4bdd71-0071-44d7-8cbd-13b268820c27/message/E2AWn8o73QsLnghblMwG
 
-
     Request Body:
+
         {
             "userId": "90b97d37-2fa8-4204-b058-045efb12a4de",
             "text": "Updated message for 2"
         }
+    
 
     Success Response (200):
+
         {
             "success": true,
             "message": "Message updated successfully."
         }
+
 
 ## Aleart:  Development Guidelines
 
