@@ -264,6 +264,56 @@ README.md – Contains project documentation and setup instructions.
             }
 
 
+7. Bonus (soft delete message)
+
+    Purpose: Allows a user to soft-delete a message from a conversation without permanently removing it from Firestore. The message is marked as deleted, preserving the underlying record.
+
+    Endpoint: DELETE /chat/:chatId/message/:messageId
+
+    http://localhost:5000/chat/be4bdd71-0071-44d7-8cbd-13b268820c27/message/DelipyD2p4egHPK908lG
+
+
+    Request Body:
+
+        {
+            "userId": "90b97d37-2fa8-4204-b058-045efb12a4de"
+        }
+    
+    Request body (JSON):
+
+        {
+            "success": true,
+            "message": "Message deleted successfully."
+        }
+
+        if already deleted
+
+        {
+            "success": false,
+            "message": "Message already deleted."
+        }
+
+
+8. Bonus (Edit Message)
+
+    Purpose: Allows a user to edit their previously sent message by updating its text while retaining the existing message record in Firestore.
+
+    Endpoint: PATCH /chat/:chatId/messages/:messageId
+
+    http://localhost:5000/chat/be4bdd71-0071-44d7-8cbd-13b268820c27/message/E2AWn8o73QsLnghblMwG
+
+
+    Request Body:
+        {
+            "userId": "90b97d37-2fa8-4204-b058-045efb12a4de",
+            "text": "Updated message for 2"
+        }
+
+    Success Response (200):
+        {
+            "success": true,
+            "message": "Message updated successfully."
+        }
 
 ## Aleart:  Development Guidelines
 

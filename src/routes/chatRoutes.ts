@@ -446,4 +446,199 @@ router.get("/user/:userId/chats", async (req: Request, res: Response) => {
 });
 
 
+// delete message (soft delete)
+
+router.delete(
+    "/:chatId/message/:messageId",
+    async (req: Request, res: Response) => {
+        const chatId = req.params.chatId as string;
+        const  messageId  = req.params.messageId as string;
+
+        const { userId } = req.body || {};
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "userId is required."
+            });
+        }
+
+        try {
+            const membership = await pool.query(
+                `SELECT 1 FROM chat_members
+                 WHERE chat_id = $1 AND user_id = $2`,
+                [chatId, userId]
+            );
+
+            if (membership.rows.length === 0) {
+                return res.status(403).json({
+                    success: false,
+                    message: "User is not a member of this chat."
+                });
+            }
+
+            const messageRef = firestore
+                .collection("chats")
+                .doc(chatId)
+                .collection("messages")
+                .doc(messageId);
+
+            const deleted = await firestore.runTransaction(async (transaction) => {
+                const messageDoc = await transaction.get(messageRef);
+
+                if (!messageDoc.exists) {
+                    return "NOT_FOUND";
+                }
+
+                const message = messageDoc.data();
+
+                if (message?.senderId !== userId) {
+                    return "FORBIDDEN";
+                }
+
+                if (message?.deleted) {
+                    return "ALREADY_DELETED";
+                }
+
+                transaction.update(messageRef, {
+                    text: null,
+                    deleted: true,
+                    deletedAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+
+                return "SUCCESS";
+            });
+
+            if (deleted === "NOT_FOUND") {
+                return res.status(404).json({
+                    success: false,
+                    message: "Message not found."
+                });
+            }
+
+            if (deleted === "FORBIDDEN") {
+                return res.status(403).json({
+                    success: false,
+                    message: "You can only delete your own messages."
+                });
+            }
+
+            if (deleted === "ALREADY_DELETED") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Message already deleted."
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Message deleted successfully."
+            });
+
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: "Failed to delete message."
+            });
+        }
+    }
+);
+
+// edit message
+router.patch(
+    "/:chatId/message/:messageId",
+    async (req: Request, res: Response) => {
+        const chatId = req.params.chatId as string;
+        const  messageId  = req.params.messageId as string;
+        const { userId, text } = req.body || {};
+
+        if (!userId || typeof text !== "string" || !text.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "userId and message text are required."
+            });
+        }
+
+        try {
+            const membership = await pool.query(
+                `SELECT 1 FROM chat_members
+                 WHERE chat_id = $1 AND user_id = $2`,
+                [chatId, userId]
+            );
+
+            if (membership.rows.length === 0) {
+                return res.status(403).json({
+                    success: false,
+                    message: "User is not a member of this chat."
+                });
+            }
+
+            const messageRef = firestore
+                .collection("chats")
+                .doc(chatId)
+                .collection("messages")
+                .doc(messageId);
+
+            const updated = await firestore.runTransaction(async (transaction) => {
+                const messageDoc = await transaction.get(messageRef);
+
+                if (!messageDoc.exists) {
+                    return "NOT_FOUND";
+                }
+
+                const message = messageDoc.data();
+
+                if (message?.senderId !== userId) {
+                    return "FORBIDDEN";
+                }
+
+                if (message?.deleted) {
+                    return "DELETED";
+                }
+
+                transaction.update(messageRef, {
+                    text: text.trim(),
+                    edited: true,
+                    editedAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+
+                return "SUCCESS";
+            });
+
+            if (updated === "NOT_FOUND") {
+                return res.status(404).json({
+                    success: false,
+                    message: "Message not found."
+                });
+            }
+
+            if (updated === "FORBIDDEN") {
+                return res.status(403).json({
+                    success: false,
+                    message: "You can only edit your own messages."
+                });
+            }
+
+            if (updated === "DELETED") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Deleted messages cannot be edited."
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Message updated successfully."
+            });
+
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: "Failed to update message."
+            });
+        }
+    }
+);
+
+
 export default router;
