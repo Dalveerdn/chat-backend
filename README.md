@@ -12,7 +12,10 @@ please visit:
 - API Discription
 - warning
 
-## project structure
+
+## Project Structure
+
+```text
 chat-backend/
 │
 ├── src/
@@ -32,6 +35,7 @@ chat-backend/
 ├── package-lock.json
 ├── tsconfig.json
 └── README.md
+```
 
 Directory and File Description
 
